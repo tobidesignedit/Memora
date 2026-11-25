@@ -1,0 +1,187 @@
+/* Lucian UX/UI Prompt #224 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#224 */
+.u224-wrap {
+  position: relative;
+}
+
+.u224-an {
+  font-size: 15.5px;
+  line-height: 1.72;
+  color: var(--ux-ink);
+  margin: 0;
+  max-width: 68ch;
+}
+
+.u224-seg {
+  transition: color 0.2s, background-size 0.3s var(--ux-ease);
+  background: linear-gradient(
+      transparent 88%,
+      color-mix(in srgb, var(--ux-accent) 72%, transparent) 88%
+    )
+    no-repeat 0 0 / 0 100%;
+}
+
+.u224-seg.is-hl {
+  color: var(--ux-ink);
+  background-size: 100% 100%;
+}
+
+.u224-ct {
+  display: inline-grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  margin: 0 3px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ux-surface-2);
+  box-shadow: inset 0 0 0 1px var(--ux-line-2);
+  color: var(--ux-ink-2);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 1px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.2s var(--ux-spring);
+}
+
+.u224-ct.is-on,
+.u224-ct:hover {
+  background: var(--ux-accent);
+  color: var(--ux-accent-ink);
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.u224-pv {
+  position: absolute;
+  z-index: 30;
+  width: min(280px, calc(100vw - 48px));
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--ux-surface);
+  border: 1px solid var(--ux-line-2);
+  box-shadow: 0 14px 32px -10px var(--ux-shadow-strong);
+  transform: translate(-50%, calc(-100% - 10px));
+  pointer-events: none;
+  animation: memoraFadeUp 180ms var(--ux-spring) both;
+}
+
+.u224-pv header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ux-ink-3);
+}
+
+.u224-pv header i {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: var(--ux-accent);
+  color: var(--ux-accent-ink);
+  font-style: normal;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.u224-pv b {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ux-ink);
+}
+
+.u224-pv p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ux-ink-2);
+}
+
+.u224-pv mark {
+  background: color-mix(in srgb, var(--ux-warn) 32%, transparent);
+  color: var(--ux-ink);
+  border-radius: 4px;
+  padding: 0 3px;
+}
+
+.u224-sl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.u224-sc {
+  padding: 11px 12px;
+  border-radius: 16px;
+  border: 0;
+  text-align: left;
+  background: var(--ux-surface-2);
+  box-shadow: inset 0 0 0 1px var(--ux-line);
+  cursor: pointer;
+  transition:
+    transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1),
+    box-shadow 0.2s,
+    background 0.2s;
+}
+
+.u224-sc.is-on,
+.u224-sc:hover {
+  transform: translateY(-4px);
+  background: var(--ux-surface);
+  box-shadow:
+    0 0 0 1.5px var(--ux-accent),
+    0 12px 24px -12px var(--ux-shadow-strong);
+}
+
+.u224-sc header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.u224-sc header i {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: var(--ux-accent-soft);
+  color: var(--ux-accent);
+  font-style: normal;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.u224-sc b {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--ux-ink);
+}
+
+.u224-sc small {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--ux-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

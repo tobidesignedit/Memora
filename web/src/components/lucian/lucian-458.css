@@ -1,0 +1,160 @@
+/* Lucian UX/UI Prompt #458 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#458 */
+.u458 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0 6px;
+}
+
+.u458-b {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.45s cubic-bezier(0.34, 1.6, 0.5, 1);
+}
+
+.u458 .u458-b:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: 10px;
+}
+
+.u458-b:active {
+  transform: scale(0.95);
+}
+
+.u458-b > span {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.u458-gw {
+  inset: -22px;
+  background: radial-gradient(
+    closest-side,
+    rgba(99, 102, 241, 0.28),
+    rgba(16, 185, 129, 0.14) 56%,
+    transparent
+  );
+  filter: blur(10px);
+  will-change: transform, opacity;
+}
+
+.u458-rp {
+  inset: 0;
+  opacity: 0.48;
+  transition: opacity 0.45s var(--ux-ease);
+}
+
+.u458-rp i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--ux-accent) 45%, transparent);
+  opacity: 0;
+  animation: u458-rip 3.2s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
+}
+
+.u458-rp i:nth-child(2) {
+  animation-delay: 1.05s;
+}
+
+.u458-rp i:nth-child(3) {
+  animation-delay: 2.1s;
+}
+
+@keyframes u458-rip {
+  0% {
+    transform: scale(1);
+    opacity: 0.72;
+  }
+  100% {
+    transform: scale(1.52);
+    opacity: 0;
+  }
+}
+
+.u458[data-s="listen"] .u458-rp,
+.u458[data-s="speak"] .u458-rp {
+  opacity: 1;
+}
+
+.u458[data-s="listen"] .u458-rp i,
+.u458[data-s="speak"] .u458-rp i {
+  animation-duration: 1.9s;
+  box-shadow: 0 0 0 1.8px color-mix(in srgb, var(--ux-mint) 68%, transparent);
+}
+
+.u458-o {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background: #111318;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 34px -14px rgba(17, 19, 24, 0.55);
+  will-change: transform;
+}
+
+.dark .u458-o,
+:root[data-theme="dark"] .u458-o {
+  background: #14161b;
+  border-color: #2f3444;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.78);
+}
+
+.u458-logo {
+  width: 78%;
+  height: 78%;
+  display: block;
+  overflow: visible;
+}
+
+.u458-orbit {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 1.2;
+  stroke-dasharray: 6 7 18 7;
+  stroke-linecap: round;
+  transform-origin: 32px 32px;
+}
+
+.u458-edge {
+  stroke: rgba(255, 255, 255, 0.54);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+}
+
+.u458-n1 {
+  fill: #6366f1;
+}
+
+.u458-n2 {
+  fill: #10b981;
+}
+
+.u458-n3 {
+  fill: #ffffff;
+}
+
+.u458-st {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--ux-ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .u458-rp i {
+    animation: none;
+    opacity: 0;
+  }
+}

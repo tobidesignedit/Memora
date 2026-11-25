@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "MEMORA — Private Hybrid-AI Second Brain",
+  "version": "1.0.0",
+  "description": "Save webpages, highlighted passages, links, and images straight into your MEMORA hybrid-AI vault.",
+  "permissions": ["activeTab", "contextMenus", "storage", "scripting"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Save to MEMORA"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+M"
+      },
+      "description": "Quick capture current webpage to MEMORA"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+/* Lucian UX/UI Prompt #228 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#228 */
+.u228-scope .u228-card {
+  position: relative;
+}
+
+.u228-scope .u228-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    220px circle at var(--cx, -500px) var(--cy, -500px),
+    color-mix(in srgb, var(--ux-accent) calc(var(--o, 0) * 65%), transparent),
+    transparent 65%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.u228-scope .u228-card::after {
+  content: none;
+}

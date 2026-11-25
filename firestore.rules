@@ -1,0 +1,441 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model — MEMORA (Private Hybrid AI Second Brain)
+// ===============================================================
+//
+// Authentication:
+//   - Firebase Authentication (Google Sign-In, Email/Password, or Anonymous Guest Auth).
+//   - Every authenticated user is strictly isolated to their own `/users/{userId}` namespace
+//     where `request.auth.uid == userId`.
+//   - Note: MEMORA does not store a root `/users/{userId}` profile document; direct reads
+//     and writes on `/users/{userId}` are denied by default.
+//
+// Collection: /users/{userId}/memories/{memoryId}
+// Document ID: memoryId (must match `id` field, e.g., "mem-<uuid>")
+// Fields:
+//   - id: string (required, immutable, 1..128 chars, == memoryId)
+//   - uid: string (required, immutable, == userId == request.auth.uid)
+//   - kind: string (required, enum: screenshot|photo|voice|note|link|document|receipt|flyer|ticket|timetable)
+//   - title: string (required, 1..200 chars)
+//   - summary: string (required, 1..2000 chars)
+//   - rawText: string (required, 0..25000 chars)
+//   - extractedText: string (required, 0..25000 chars)
+//   - url: string|null (optional, 0..2000 chars, must be http:// or https:// if non-empty)
+//   - sourceApp: string|null (optional, 0..100 chars)
+//   - mediaMimeType: string|null (optional, 0..128 chars)
+//   - mediaFileName: string|null (optional, 0..255 chars)
+//   - mediaLocalKey: string|null (optional, 0..200 chars)
+//   - mediaThumbnail: string|null (optional, 0..400000 chars, data:image/* or https:// if non-empty)
+//   - tags: list<string> (required, max 20 items, max 1000 combined chars)
+//   - category: string (required, 1..100 chars)
+//   - entities: map (required, exact keys: people, organizations, dates, amounts, locations, contacts;
+//       each a list<string>, max 30 items, max 3000 combined chars)
+//   - actionItems: list<string> (required, max 30 items, max 9000 combined chars)
+//   - personalNote: string|null (optional, 0..5000 chars)
+//   - threadId: string|null (optional, 0..128 chars)
+//   - threadTopic: string|null (optional, 0..120 chars)
+//   - importance: string (required, enum: high|normal|low)
+//   - language: string|null (optional, 0..32 chars)
+//   - inferenceSource: string (required, enum: on_device|in_cloud|offline_heuristic)
+//   - inferenceModel: string|null (optional, 0..120 chars)
+//   - inferenceLatencyMs: int|float (required, 0..3600000)
+//   - privacyMode: string (required, cloud enum: prefer_on_device|prefer_in_cloud;
+//       `only_on_device` is STRICTLY REJECTED on cloud writes as defense-in-depth)
+//   - syncStatus: string (required, cloud enum: synced|pending; `local_only` rejected)
+//   - pinned: bool (required)
+//   - favorite: bool (required)
+//   - archived: bool (required)
+//   - createdAt: int (required, immutable, epoch ms >= 2000-01-01 and <= server time + 1h)
+//   - updatedAt: int (required, epoch ms >= 2000-01-01 and <= server time + 1h)
+//
+// Collection: /users/{userId}/reminders/{reminderId}
+// Document ID: reminderId (must match `id` field, e.g., "rem-<uuid>")
+// Fields:
+//   - id: string (required, immutable, 1..128 chars, == reminderId)
+//   - uid: string (required, immutable, == userId == request.auth.uid)
+//   - memoryId: string|null (optional, 0..128 chars)
+//   - memoryTitle: string|null (optional, 0..200 chars)
+//   - memoryThumbnail: string|null (optional, 0..400000 chars, data:image/* or https:// if non-empty)
+//   - title: string (required, 1..200 chars)
+//   - dueDateIso: string (required, 10 chars, format YYYY-MM-DD)
+//   - dueTime: string|null (optional, 0..32 chars)
+//   - venue: string|null (optional, 0..250 chars)
+//   - organizer: string|null (optional, 0..200 chars)
+//   - category: string (required, enum: event|exam|payment|travel|meeting|deadline|personal)
+//   - priority: string (required, enum: high|medium|low)
+//   - status: string (required, enum: suggested|confirmed|completed|snoozed; state transitions validated)
+//   - recurrence: string (required, enum: none|daily|weekly)
+//   - conflictWithId: string|null (optional, 0..128 chars)
+//   - notes: string|null (optional, 0..2000 chars)
+//   - createdAt: int (required, immutable, epoch ms >= 2000-01-01 and <= server time + 1h)
+//   - updatedAt: int (required, epoch ms >= 2000-01-01 and <= server time + 1h)
+//
+// Collection: /users/{userId}/threads/{threadId}
+// Document ID: threadId (must match `id` field, e.g., "thread-<slug>")
+// Fields:
+//   - id: string (required, immutable, 1..128 chars, == threadId)
+//   - uid: string (required, immutable, == userId == request.auth.uid)
+//   - title: string (required, 1..200 chars)
+//   - topic: string (required, 1..120 chars)
+//   - summary: string (required, 1..4000 chars)
+//   - memoryIds: list<string> (required, max 200 items, max 26000 combined chars)
+//   - keyInsights: list<string> (required, max 30 items, max 18000 combined chars)
+//   - nextActions: list<string> (required, max 30 items, max 10000 combined chars)
+//   - autoGenerated: bool (required)
+//   - inferenceSource: string|null (optional, enum: on_device|in_cloud|offline_heuristic)
+//   - updatedAt: int (required, epoch ms >= 2000-01-01 and <= server time + 1h)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the caller is authenticated (Google, Email/Password, or Anonymous Guest)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the authenticated caller owns the target userId path namespace
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if the authenticated caller owns the existing document via its uid field
+    function isDocOwner() {
+      return isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
+    // Verify incoming uid field matches the authenticated user on create
+    function uidUnchanged() {
+      return ('uid' in request.resource.data) &&
+        request.resource.data.uid == request.auth.uid;
+    }
+
+    // Verify uid field is not modified on update
+    function uidNotModified() {
+      return ('uid' in request.resource.data) &&
+        request.resource.data.uid == resource.data.uid;
+    }
+
+    // Validate document contains only explicitly permitted fields (blocks schema pollution)
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Validate document contains all required fields (works on both create and post-merge update)
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Validate immutable fields remain untouched on update
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // Validate a required string within inclusive length bounds
+    function isValidString(val, minLen, maxLen) {
+      return val is string &&
+        val.size() >= minLen &&
+        val.size() <= maxLen;
+    }
+
+    // Validate an optional string (supports omitted keys from Web AND explicit null from Android Kotlin)
+    function isValidOptionalString(data, field, maxLen) {
+      return !(field in data) ||
+        data[field] == null ||
+        (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    // Validate HTTP/HTTPS URL format (blocks javascript:, data:, and oversized URLs)
+    function isValidUrl(url) {
+      return url is string &&
+        url.size() <= 2000 &&
+        (url.matches('^https://.+') || url.matches('^http://.+'));
+    }
+
+    // Validate optional URL field (omitted, null, empty string, or valid http(s):// URL)
+    function isValidOptionalUrl(data, field, maxLen) {
+      return !(field in data) ||
+        data[field] == null ||
+        (data[field] is string &&
+         data[field].size() <= maxLen &&
+         (data[field].size() == 0 || isValidUrl(data[field])));
+    }
+
+    // Validate optional image thumbnail (O(1) prefix check avoids RE2 over 400KB payloads)
+    function isValidOptionalThumbnail(data, field, maxLen) {
+      return !(field in data) ||
+        data[field] == null ||
+        (data[field] is string &&
+         data[field].size() <= maxLen &&
+         (data[field].size() == 0 ||
+          (data[field].size() >= 11 && data[field][0:11] == 'data:image/') ||
+          (data[field].size() >= 8 && data[field][0:8] == 'https://')));
+    }
+
+    // Validate YYYY-MM-DD calendar date format (format check only; note double-escaped \\d)
+    function isValidIsoDate(dateStr) {
+      return dateStr is string &&
+        dateStr.size() == 10 &&
+        dateStr.matches('^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$');
+    }
+
+    // Validate Unix epoch millisecond timestamps (offline-sync friendly, blocks far-future forgery)
+    // Lower bound: 2000-01-01T00:00:00Z (946684800000 ms)
+    // Upper bound: server request.time + 1 hour (3600000 ms) to tolerate minor client clock skew
+    function isValidEpochMs(ts) {
+      return ts is int &&
+        ts >= 946684800000 &&
+        ts <= request.time.toMillis() + 3600000;
+    }
+
+    // Deep list validation in O(1) CEL expressions:
+    // - Verifies value is a list within maxItems.
+    // - `join(',')` throws a runtime error (evaluating to DENY) if ANY element is not a string,
+    //   and `.size() <= maxTotalChars` prevents DoS via huge elements anywhere in the list.
+    function isValidStringList(arr, maxItems, maxTotalChars) {
+      return arr is list &&
+        arr.size() <= maxItems &&
+        arr.join(',').size() <= maxTotalChars;
+    }
+
+    // Validate ExtractedEntities map strictly (exact 6 keys, each a bounded string list)
+    function isValidEntities(entities) {
+      let allowedKeys = ['people', 'organizations', 'dates', 'amounts', 'locations', 'contacts'];
+      return entities is map &&
+        entities.keys().hasOnly(allowedKeys) &&
+        entities.keys().hasAll(allowedKeys) &&
+        isValidStringList(entities.people, 30, 3000) &&
+        isValidStringList(entities.organizations, 30, 3000) &&
+        isValidStringList(entities.dates, 30, 3000) &&
+        isValidStringList(entities.amounts, 30, 3000) &&
+        isValidStringList(entities.locations, 30, 3000) &&
+        isValidStringList(entities.contacts, 30, 3000);
+    }
+
+    // ===============================================================
+    // Domain Validators (Called in BOTH create and update rules)
+    // ===============================================================
+
+    function isValidMemory(data, userId, memoryId) {
+      let allowedFields = [
+        'id', 'uid', 'kind', 'title', 'summary', 'rawText', 'extractedText',
+        'url', 'sourceApp', 'mediaMimeType', 'mediaFileName', 'mediaLocalKey',
+        'mediaThumbnail', 'tags', 'category', 'entities', 'actionItems',
+        'personalNote', 'threadId', 'threadTopic', 'importance', 'language',
+        'inferenceSource', 'inferenceModel', 'inferenceLatencyMs',
+        'privacyMode', 'syncStatus', 'pinned', 'favorite', 'archived',
+        'createdAt', 'updatedAt'
+      ];
+      let requiredFields = [
+        'id', 'uid', 'kind', 'title', 'summary', 'rawText', 'extractedText',
+        'tags', 'category', 'entities', 'actionItems', 'importance',
+        'inferenceSource', 'inferenceLatencyMs', 'privacyMode', 'syncStatus',
+        'pinned', 'favorite', 'archived', 'createdAt', 'updatedAt'
+      ];
+      let validKinds = [
+        'screenshot', 'photo', 'voice', 'note', 'link',
+        'document', 'receipt', 'flyer', 'ticket', 'timetable'
+      ];
+
+      return hasOnlyAllowedFields(allowedFields) &&
+        hasRequiredFields(requiredFields) &&
+        // Identity & cross-tenant binding
+        isValidString(data.id, 1, 128) &&
+        data.id == memoryId &&
+        data.uid is string &&
+        data.uid == userId &&
+        // Defense-in-depth: NEVER allow local-only private vault memories into Cloud Firestore
+        data.privacyMode is string &&
+        data.privacyMode in ['prefer_on_device', 'prefer_in_cloud'] &&
+        data.syncStatus is string &&
+        data.syncStatus in ['synced', 'pending'] &&
+        // Core required content fields with strict types & bounds
+        data.kind is string &&
+        data.kind in validKinds &&
+        isValidString(data.title, 1, 200) &&
+        isValidString(data.summary, 1, 2000) &&
+        isValidString(data.rawText, 0, 25000) &&
+        isValidString(data.extractedText, 0, 25000) &&
+        isValidString(data.category, 1, 100) &&
+        isValidStringList(data.tags, 20, 1000) &&
+        isValidEntities(data.entities) &&
+        isValidStringList(data.actionItems, 30, 9000) &&
+        data.importance is string &&
+        data.importance in ['high', 'normal', 'low'] &&
+        data.inferenceSource is string &&
+        data.inferenceSource in ['on_device', 'in_cloud', 'offline_heuristic'] &&
+        (data.inferenceLatencyMs is int || data.inferenceLatencyMs is float) &&
+        data.inferenceLatencyMs >= 0 &&
+        data.inferenceLatencyMs <= 3600000 &&
+        data.pinned is bool &&
+        data.favorite is bool &&
+        data.archived is bool &&
+        isValidEpochMs(data.createdAt) &&
+        isValidEpochMs(data.updatedAt) &&
+        // Optional fields with strict type, format & DoS bounds
+        isValidOptionalUrl(data, 'url', 2000) &&
+        isValidOptionalString(data, 'sourceApp', 100) &&
+        isValidOptionalString(data, 'mediaMimeType', 128) &&
+        isValidOptionalString(data, 'mediaFileName', 255) &&
+        isValidOptionalString(data, 'mediaLocalKey', 200) &&
+        isValidOptionalThumbnail(data, 'mediaThumbnail', 400000) &&
+        isValidOptionalString(data, 'personalNote', 5000) &&
+        isValidOptionalString(data, 'threadId', 128) &&
+        isValidOptionalString(data, 'threadTopic', 120) &&
+        isValidOptionalString(data, 'language', 32) &&
+        isValidOptionalString(data, 'inferenceModel', 120);
+    }
+
+    function isValidReminder(data, userId, reminderId) {
+      let allowedFields = [
+        'id', 'uid', 'memoryId', 'memoryTitle', 'memoryThumbnail',
+        'title', 'dueDateIso', 'dueTime', 'venue', 'organizer',
+        'category', 'priority', 'status', 'recurrence',
+        'conflictWithId', 'notes', 'createdAt', 'updatedAt'
+      ];
+      let requiredFields = [
+        'id', 'uid', 'title', 'dueDateIso', 'category',
+        'priority', 'status', 'recurrence', 'createdAt', 'updatedAt'
+      ];
+      let validCategories = [
+        'event', 'exam', 'payment', 'travel', 'meeting', 'deadline', 'personal'
+      ];
+
+      return hasOnlyAllowedFields(allowedFields) &&
+        hasRequiredFields(requiredFields) &&
+        // Identity & cross-tenant binding
+        isValidString(data.id, 1, 128) &&
+        data.id == reminderId &&
+        data.uid is string &&
+        data.uid == userId &&
+        // Required reminder fields
+        isValidString(data.title, 1, 200) &&
+        isValidIsoDate(data.dueDateIso) &&
+        data.category is string &&
+        data.category in validCategories &&
+        data.priority is string &&
+        data.priority in ['high', 'medium', 'low'] &&
+        data.status is string &&
+        data.status in ['suggested', 'confirmed', 'completed', 'snoozed'] &&
+        data.recurrence is string &&
+        data.recurrence in ['none', 'daily', 'weekly'] &&
+        isValidEpochMs(data.createdAt) &&
+        isValidEpochMs(data.updatedAt) &&
+        // Optional fields
+        isValidOptionalString(data, 'memoryId', 128) &&
+        isValidOptionalString(data, 'memoryTitle', 200) &&
+        isValidOptionalThumbnail(data, 'memoryThumbnail', 400000) &&
+        isValidOptionalString(data, 'dueTime', 32) &&
+        isValidOptionalString(data, 'venue', 250) &&
+        isValidOptionalString(data, 'organizer', 200) &&
+        isValidOptionalString(data, 'conflictWithId', 128) &&
+        isValidOptionalString(data, 'notes', 2000);
+    }
+
+    // Enforce valid reminder lifecycle transitions on update (prevents reverting confirmed/done items to 'suggested')
+    function isValidReminderStatusTransition(prevStatus, nextStatus) {
+      return prevStatus == nextStatus ||
+        (prevStatus == 'suggested' && nextStatus in ['confirmed', 'snoozed', 'completed']) ||
+        (prevStatus == 'confirmed' && nextStatus in ['snoozed', 'completed']) ||
+        (prevStatus == 'snoozed' && nextStatus in ['confirmed', 'completed']) ||
+        (prevStatus == 'completed' && nextStatus == 'confirmed');
+    }
+
+    function isValidThread(data, userId, threadId) {
+      let allowedFields = [
+        'id', 'uid', 'title', 'topic', 'summary',
+        'memoryIds', 'keyInsights', 'nextActions',
+        'autoGenerated', 'inferenceSource', 'updatedAt'
+      ];
+      let requiredFields = [
+        'id', 'uid', 'title', 'topic', 'summary',
+        'memoryIds', 'keyInsights', 'nextActions',
+        'autoGenerated', 'updatedAt'
+      ];
+
+      return hasOnlyAllowedFields(allowedFields) &&
+        hasRequiredFields(requiredFields) &&
+        // Identity & cross-tenant binding
+        isValidString(data.id, 1, 128) &&
+        data.id == threadId &&
+        data.uid is string &&
+        data.uid == userId &&
+        // Required thread fields
+        isValidString(data.title, 1, 200) &&
+        isValidString(data.topic, 1, 120) &&
+        isValidString(data.summary, 1, 4000) &&
+        isValidStringList(data.memoryIds, 200, 26000) &&
+        isValidStringList(data.keyInsights, 30, 18000) &&
+        isValidStringList(data.nextActions, 30, 10000) &&
+        data.autoGenerated is bool &&
+        isValidEpochMs(data.updatedAt) &&
+        // Optional inferenceSource
+        (!('inferenceSource' in data) ||
+          data.inferenceSource == null ||
+          (data.inferenceSource is string &&
+           data.inferenceSource in ['on_device', 'in_cloud', 'offline_heuristic']));
+    }
+
+    // ===============================================================
+    // Collection Rules — Strictly Owner-Isolated User Subcollections
+    // ===============================================================
+
+    match /users/{userId} {
+      // Root user document is unused by MEMORA; deny direct access to prevent unvalidated PII or role injection.
+      allow read, write: if false;
+
+      match /memories/{memoryId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          uidUnchanged() &&
+          isValidMemory(request.resource.data, userId, memoryId);
+        allow update: if isOwner(userId) &&
+          isDocOwner() &&
+          uidNotModified() &&
+          areImmutableFieldsUnchanged(['id', 'uid', 'createdAt']) &&
+          isValidMemory(request.resource.data, userId, memoryId);
+        allow delete: if isOwner(userId) && (resource == null || isDocOwner());
+      }
+
+      match /reminders/{reminderId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          uidUnchanged() &&
+          isValidReminder(request.resource.data, userId, reminderId);
+        allow update: if isOwner(userId) &&
+          isDocOwner() &&
+          uidNotModified() &&
+          areImmutableFieldsUnchanged(['id', 'uid', 'createdAt']) &&
+          isValidReminderStatusTransition(resource.data.status, request.resource.data.status) &&
+          isValidReminder(request.resource.data, userId, reminderId);
+        allow delete: if isOwner(userId) && (resource == null || isDocOwner());
+      }
+
+      match /threads/{threadId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          uidUnchanged() &&
+          isValidThread(request.resource.data, userId, threadId);
+        allow update: if isOwner(userId) &&
+          isDocOwner() &&
+          uidNotModified() &&
+          areImmutableFieldsUnchanged(['id', 'uid']) &&
+          isValidThread(request.resource.data, userId, threadId);
+        allow delete: if isOwner(userId) && (resource == null || isDocOwner());
+      }
+    }
+
+    // ===============================================================
+    // Default Deny-All Fallback
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MEMORA</string>
+    <string name="widget_name">MEMORA Quick Capture</string>
+    <string name="widget_description">Capture screenshots, voice notes, or search MEMORA from your home screen</string>
+</resources>

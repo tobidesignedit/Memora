@@ -1,0 +1,296 @@
+@import "tailwindcss";
+@import "./styles/lucian-tokens.css";
+
+/* Light Mode (Default) — Crisp Gallery Minimal (DESIGNmd Genesis × Block Canvas × Aime) */
+:root {
+  --bg-canvas: #fafafa;
+  --bg-surface: #ffffff;
+  --bg-surface-solid: #ffffff;
+  --bg-soft: #f4f4f6;
+  --bg-raised: #ffffff;
+  --bg-glass: #ffffff;
+  --bg-note: #fcfbf8;
+  --bg-voice: #f6f7fb;
+
+  --text-primary: #111318;
+  --text-secondary: #525866;
+  --text-muted: #868c98;
+  --border-subtle: #e8e8ec;
+  --border-strong: #d4d6de;
+
+  --accent-primary: #4f46e5;
+  --accent-primary-hover: #4338ca;
+  --accent-primary-soft: rgba(79, 70, 229, 0.09);
+  --on-accent: #ffffff;
+  --accent-spark: #d97706;
+  --accent-spark-soft: rgba(217, 119, 6, 0.11);
+  --semantic-ondevice: #059669;
+  --semantic-ondevice-soft: rgba(5, 150, 105, 0.1);
+  --semantic-warning: #d97706;
+  --semantic-danger: #dc2626;
+  --semantic-danger-soft: rgba(220, 38, 38, 0.09);
+
+  --shadow-card: 0 1px 2px rgba(17, 19, 24, 0.03);
+  --shadow-card-hover: 0 10px 30px rgba(17, 19, 24, 0.08), 0 2px 6px rgba(17, 19, 24, 0.04);
+  --shadow-omnibox: 0 2px 10px rgba(17, 19, 24, 0.04), 0 1px 2px rgba(17, 19, 24, 0.03);
+  --shadow-modal: 0 24px 60px rgba(17, 19, 24, 0.16), 0 4px 14px rgba(17, 19, 24, 0.06);
+  --keycap-start: #ffffff;
+  --keycap-end: #f4f4f6;
+}
+
+/* Solid Dark Mode — Obsidian Gallery Precision (Zero Fog, Crisp 1px Hairlines) */
+.dark {
+  --bg-canvas: #0b0c0f;
+  --bg-surface: #14161b;
+  --bg-surface-solid: #14161b;
+  --bg-soft: #1c1f26;
+  --bg-raised: #1e212a;
+  --bg-glass: #111318;
+  --bg-note: #17181d;
+  --bg-voice: #151822;
+
+  --text-primary: #f4f5f7;
+  --text-secondary: #a1a7b5;
+  --text-muted: #6e7485;
+  --border-subtle: #23262f;
+  --border-strong: #323644;
+
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #818cf8;
+  --accent-primary-soft: rgba(99, 102, 241, 0.16);
+  --on-accent: #ffffff;
+  --accent-spark: #f59e0b;
+  --accent-spark-soft: rgba(245, 158, 11, 0.15);
+  --semantic-ondevice: #10b981;
+  --semantic-ondevice-soft: rgba(16, 185, 129, 0.14);
+  --semantic-warning: #f59e0b;
+  --semantic-danger: #ef4444;
+  --semantic-danger-soft: rgba(239, 68, 68, 0.15);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-card-hover: 0 14px 36px rgba(0, 0, 0, 0.48), 0 2px 8px rgba(0, 0, 0, 0.32);
+  --shadow-omnibox: 0 4px 16px rgba(0, 0, 0, 0.34);
+  --shadow-modal: 0 28px 72px rgba(0, 0, 0, 0.68), 0 4px 18px rgba(0, 0, 0, 0.42);
+  --keycap-start: #232732;
+  --keycap-end: #1a1d26;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "calt", "kern", "liga", "ss03";
+  font-size: 15px;
+  line-height: 1.56;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  caret-color: var(--accent-primary);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-primary-soft);
+  color: var(--text-primary);
+}
+
+/* Crisp Geometric Editorial Display (Genesis × Block Canvas) */
+.font-display {
+  font-family: "DM Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* Refined Literary Serif reserved for Stationery Notes & Voice Quotes */
+.font-editorial {
+  font-family: "Newsreader", Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+}
+
+.font-mono-data {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Crisp Solid Sticky Top Header & Mobile Bottom Navigation (Zero Bleed-Through) */
+.memora-glass {
+  background: var(--bg-glass);
+}
+
+/* Crisp Solid Sheet / Drawer / Modal Surface */
+.memora-sheet {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-modal);
+}
+
+/* Tactile Keycap */
+.memora-keycap {
+  background: linear-gradient(180deg, var(--keycap-start) 0%, var(--keycap-end) 100%);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Crisp Solid Gallery-Frame Card (Genesis: flat 1px border at rest, subtle lift on hover) */
+.memora-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 180ms ease;
+}
+
+.memora-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--border-strong);
+}
+
+.memora-press {
+  transition:
+    transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.memora-press:active {
+  transform: scale(0.97);
+}
+
+/* Asymmetric CSS Masonry Gallery */
+.memora-masonry {
+  column-count: 1;
+  column-gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .memora-masonry {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .memora-masonry {
+    column-count: 3;
+  }
+}
+
+@media (min-width: 1340px) {
+  .memora-masonry {
+    column-count: 4;
+  }
+}
+
+.memora-masonry-item {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-bottom: 20px;
+}
+
+/* Crisp Solid Mind Bar Omnibox (Genesis 3px Indigo Focus Ring) */
+.memora-omnibox {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-omnibox);
+  transition: border-color 180ms ease, box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.memora-omnibox:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow:
+    0 0 0 3px var(--accent-primary-soft),
+    var(--shadow-omnibox);
+}
+
+.memora-omnibox input:focus,
+.memora-omnibox input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+@keyframes memoraFadeUp {
+  from {
+    opacity: 0.01;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-memora-enter {
+  animation: memoraFadeUp 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes memoraWavePulse {
+  0%, 100% {
+    transform: scaleY(0.45);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-wave-bar {
+  transform-origin: center;
+  animation: memoraWavePulse 900ms ease-in-out infinite;
+}

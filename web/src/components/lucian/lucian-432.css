@@ -1,0 +1,252 @@
+/* Lucian UX/UI Prompt #432 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#432 */
+.u432 {
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.u432-dz {
+  position: relative;
+  width: 100%;
+  min-height: 204px;
+  padding: 20px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--ux-surface-2);
+  cursor: pointer;
+  transform: scale(var(--k, 1));
+  transition: background-color 0.2s var(--ux-ease), transform 0.5s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.u432-dz::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px dashed var(--ux-line-2);
+  transition: border-color 0.25s var(--ux-ease);
+  pointer-events: none;
+}
+
+.u432-dz:hover::before {
+  border-color: var(--ux-accent);
+}
+
+.u432.is-drag .u432-dz {
+  --k: 1.02;
+  background: var(--ux-accent-soft);
+}
+
+.u432.is-drag .u432-dz::before {
+  border-style: solid;
+  border-color: var(--ux-accent);
+}
+
+.u432-idle,
+.u432-up {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.u432-idle {
+  transition: opacity 0.25s var(--ux-ease), transform 0.45s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.u432.is-up .u432-idle {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+
+.u432-ar {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--ux-surface);
+  border: 1px solid var(--ux-line-2);
+  color: var(--ux-ink);
+  animation: u432-bob 2.6s ease-in-out infinite;
+  transition: color 0.2s, transform 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.u432-ar svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes u432-bob {
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.u432.is-drag .u432-ar {
+  color: var(--ux-accent);
+  animation: none;
+  transform: translateY(-8px) scale(1.08);
+}
+
+.u432-idle b {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ux-ink);
+}
+
+.u432-idle small {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--ux-ink-3);
+}
+
+.u432-up {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.u432.is-up .u432-up {
+  opacity: 1;
+}
+
+.u432-st {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  display: grid;
+  place-items: center;
+}
+
+.u432-ring {
+  position: absolute;
+  inset: 0;
+  width: 108px;
+  height: 108px;
+  transform: rotate(-90deg);
+}
+
+.u432-ring circle {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.u432-ring .tk {
+  stroke: var(--ux-line);
+}
+
+.u432-ring .pg {
+  stroke: var(--ux-accent);
+  stroke-dasharray: 289;
+  transition: stroke 0.3s var(--ux-ease), stroke-dashoffset 0.16s linear;
+}
+
+.u432.is-done .u432-ring .pg {
+  stroke: var(--ux-mint);
+}
+
+.u432-doc {
+  width: 48px;
+  height: 60px;
+  overflow: visible;
+}
+
+.u432.is-up .u432-doc {
+  animation: u432-drop 0.72s cubic-bezier(0.3, 1.2, 0.5, 1) both;
+}
+
+@keyframes u432-drop {
+  0% {
+    transform: translateY(-110px) rotate(-14deg);
+    opacity: 0;
+  }
+  45% {
+    transform: translateY(4px) rotate(2deg) scale(1.06, 0.9);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(-3px) scale(0.98, 1.03);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.u432-doc .pp {
+  fill: var(--ux-surface);
+  stroke: var(--ux-line-2);
+  stroke-width: 1.4;
+}
+
+.u432-doc .fd {
+  fill: var(--ux-surface-3);
+}
+
+.u432-doc .ln {
+  fill: var(--ux-line-2);
+}
+
+.u432-doc .tg {
+  fill: var(--c, #0090ff);
+}
+
+.u432-doc text {
+  font: 800 8.5px / 1 system-ui, sans-serif;
+  fill: #fff;
+  letter-spacing: 0.02em;
+}
+
+.u432-ok {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ux-mint);
+  color: var(--ux-page);
+  box-shadow: 0 0 0 3px var(--ux-surface), 0 6px 14px -6px var(--ux-mint);
+  opacity: 0;
+  transform: scale(0.2);
+}
+
+.u432-ok svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.u432.is-done .u432-ok {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.15s, transform 0.55s cubic-bezier(0.3, 1.9, 0.5, 1);
+}
+
+.u432-nm {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ux-ink);
+}

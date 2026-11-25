@@ -1,0 +1,37 @@
+/* Lucian UX/UI Prompt #447 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#447 */
+/* Header slot: the 176x74 switch is scaled to 66x28 (scale .375), motion values untouched. */
+.u447-slot{position:relative;width:66px;height:28px;flex:none}
+.u447{position:absolute;left:0;top:0;width:176px;height:74px;transform:scale(.375);transform-origin:0 0}
+.u447-b{position:relative;width:176px;height:74px;padding:0;border:0;border-radius:37px;overflow:hidden;isolation:isolate;background:#4FA8F7;box-shadow:inset 0 3px 7px rgba(0,0,0,.28),inset 0 -1px 2px rgba(255,255,255,.25),0 0 0 1px rgba(0,0,0,.06),0 10px 24px -14px rgba(20,40,90,.55);transition:transform .45s var(--ux-spring)}
+.u447-b:active{transform:scale(.97)}
+.u447 .u447-b:focus-visible{outline:4px solid var(--ux-accent);outline-offset:8px}
+.u447-b>*{position:absolute;pointer-events:none}
+.u447-sky{inset:0;background:linear-gradient(180deg,#3E97EC,#86C8FF);transition:opacity .6s}
+.u447-ngt{inset:0;opacity:0;background:linear-gradient(180deg,#151840,#2C3170);transition:opacity .6s}
+.u447-halo{left:6px;top:6px;width:62px;height:62px;transition:transform .75s var(--ux-spring)}
+.u447-halo i{position:absolute;left:50%;top:50%;border-radius:50%;background:rgba(255,255,255,.12);transform:translate(-50%,-50%)}
+.u447-halo i:nth-child(1){width:96px;height:96px}
+.u447-halo i:nth-child(2){width:132px;height:132px;background:rgba(255,255,255,.09)}
+.u447-halo i:nth-child(3){width:170px;height:170px;background:rgba(255,255,255,.06)}
+.u447-cl{right:-14px;bottom:-16px;width:136px;height:68px;transition:transform .6s var(--ux-ease) .05s}
+.u447-cl g{animation:u447-drift 7s ease-in-out infinite alternate}
+.u447-cl g+g{animation-duration:5.5s}
+@keyframes u447-drift{to{transform:translateX(-5px)}}
+.u447-sr{left:16px;top:8px;width:90px;height:58px;opacity:0;transform:translateY(-36px);transition:transform .6s var(--ux-ease),opacity .4s}
+.u447-sr path,.u447-sr circle{fill:#FFFFFF;transform-box:fill-box;transform-origin:center;animation:u447-tw 2.4s ease-in-out infinite}
+.u447-sr :nth-child(2n){animation-delay:-.8s}
+.u447-sr :nth-child(3n){animation-delay:-1.6s}
+@keyframes u447-tw{50%{opacity:.45;transform:scale(.7)}}
+.u447-th{left:6px;top:6px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFE27A,#FFC21F 60%,#F2A900);box-shadow:0 4px 8px rgba(0,0,0,.28),inset -3px -4px 6px rgba(190,110,0,.35),inset 3px 3px 5px rgba(255,255,255,.45);transition:transform .75s var(--ux-spring)}
+.u447-th::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#F4F3FA,#D6D3E6 65%,#B9B5CF);box-shadow:inset -3px -4px 6px rgba(70,64,110,.35),inset 3px 3px 5px rgba(255,255,255,.6);opacity:0;transition:opacity .45s .1s}
+.u447-th svg{position:absolute;inset:0;width:62px;height:62px}
+.u447-th circle{fill:#A9A4C4;opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(0);transition:opacity .3s,transform .5s var(--ux-spring)}
+.u447-th circle:nth-child(2){transition-delay:.06s}
+.u447-th circle:nth-child(3){transition-delay:.12s}
+.u447-b[aria-checked="true"] .u447-ngt{opacity:1}
+.u447-b[aria-checked="true"] .u447-halo{transform:translateX(102px)}
+.u447-b[aria-checked="true"] .u447-th{transform:translateX(102px) rotate(200deg)}
+.u447-b[aria-checked="true"] .u447-th::before{opacity:1}
+.u447-b[aria-checked="true"] .u447-th circle{opacity:1;transform:none;transition-delay:.25s}
+.u447-b[aria-checked="true"] .u447-cl{transform:translateY(56px);transition-delay:0s}
+.u447-b[aria-checked="true"] .u447-sr{opacity:1;transform:none;transition-delay:.15s}

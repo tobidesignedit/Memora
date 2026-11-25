@@ -1,0 +1,75 @@
+﻿{
+  "conditions": [],
+  "parameters": {
+    "cloud_model_fast": {
+      "defaultValue": {
+        "value": "gemini-3.5-flash-lite"
+      },
+      "description": "Fast cloud fallback model for MEMORA hybrid inference when on-device Gemini Nano 4 is unavailable.",
+      "valueType": "STRING"
+    },
+    "cloud_model_pro": {
+      "defaultValue": {
+        "value": "gemini-3.8-flash"
+      },
+      "description": "Primary cloud reasoning model for deep PDF/audio extraction and cross-memory Thread synthesis.",
+      "valueType": "STRING"
+    },
+    "tts_model": {
+      "defaultValue": {
+        "value": "gemini-3.1-flash-tts-preview"
+      },
+      "description": "Natural spoken audio recap model via Firebase AI Logic.",
+      "valueType": "STRING"
+    },
+    "default_inference_mode": {
+      "defaultValue": {
+        "value": "prefer_on_device"
+      },
+      "description": "Default hybrid routing mode: prefer_on_device | only_on_device | prefer_in_cloud.",
+      "valueType": "STRING"
+    },
+    "enable_tts_recap": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Enable spoken AI memory recaps via Firebase AI Logic TTS.",
+      "valueType": "BOOLEAN"
+    },
+    "max_context_memories": {
+      "defaultValue": {
+        "value": "24"
+      },
+      "description": "Maximum number of local-ranked memories passed to conversational AI Search.",
+      "valueType": "NUMBER"
+    },
+    "latest_app_version_code": {
+      "defaultValue": {
+        "value": "4"
+      },
+      "description": "Latest Android APK versionCode pushed for automatic OTA update notification.",
+      "valueType": "NUMBER"
+    },
+    "latest_app_version_name": {
+      "defaultValue": {
+        "value": "1.2.1"
+      },
+      "description": "Human-readable version name of the latest pushed Android APK.",
+      "valueType": "STRING"
+    },
+    "apk_download_url": {
+      "defaultValue": {
+        "value": "https://github.com/tobidesignedit/Memora/releases/latest/download/MEMORA-Android.apk"
+      },
+      "description": "Direct HTTPS APK download URL for in-app Android update installation.",
+      "valueType": "STRING"
+    },
+    "apk_release_notes": {
+      "defaultValue": {
+        "value": "MEMORA v1.2.1 — Dedicated Settings gear button in the top bar."
+      },
+      "description": "Short release notes displayed when an Android update is available.",
+      "valueType": "STRING"
+    }
+  }
+}
