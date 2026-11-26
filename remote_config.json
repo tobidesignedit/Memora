@@ -45,14 +45,14 @@
     },
     "latest_app_version_code": {
       "defaultValue": {
-        "value": "5"
+        "value": "6"
       },
       "description": "Latest Android APK versionCode pushed for automatic OTA update notification.",
       "valueType": "NUMBER"
     },
     "latest_app_version_name": {
       "defaultValue": {
-        "value": "1.2.2"
+        "value": "1.2.3"
       },
       "description": "Human-readable version name of the latest pushed Android APK.",
       "valueType": "STRING"

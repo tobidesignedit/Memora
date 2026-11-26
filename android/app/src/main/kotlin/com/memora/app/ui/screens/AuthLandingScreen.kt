@@ -53,12 +53,14 @@ import com.memora.app.ui.theme.LocalMemoraColors
 fun AuthLandingScreen(
   authBusy: Boolean,
   onSignIn: (String, String) -> Unit,
-  onSignUp: (String, String) -> Unit,
+  onSignUp: (String, String, String, String) -> Unit,
   onGoogleSignIn: () -> Unit,
   onContinueOffline: () -> Unit,
 ) {
   val palette = LocalMemoraColors.current
   var isSignUp by remember { mutableStateOf(true) }
+  var name by remember { mutableStateOf("") }
+  var username by remember { mutableStateOf("") }
   var email by remember { mutableStateOf("") }
   var password by remember { mutableStateOf("") }
 
@@ -155,6 +157,26 @@ fun AuthLandingScreen(
             }
           }
 
+          if (isSignUp) {
+            OutlinedTextField(
+              value = name,
+              onValueChange = { name = it },
+              label = { Text("Name") },
+              singleLine = true,
+              shape = RoundedCornerShape(12.dp),
+              modifier = Modifier.fillMaxWidth(),
+            )
+
+            OutlinedTextField(
+              value = username,
+              onValueChange = { username = it },
+              label = { Text("Username") },
+              singleLine = true,
+              shape = RoundedCornerShape(12.dp),
+              modifier = Modifier.fillMaxWidth(),
+            )
+          }
+
           OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -176,7 +198,7 @@ fun AuthLandingScreen(
 
           Button(
             onClick = {
-              if (isSignUp) onSignUp(email, password) else onSignIn(email, password)
+              if (isSignUp) onSignUp(name, username, email, password) else onSignIn(email, password)
             },
             enabled = !authBusy,
             shape = RoundedCornerShape(12.dp),

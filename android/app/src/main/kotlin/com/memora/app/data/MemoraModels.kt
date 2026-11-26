@@ -105,6 +105,15 @@ data class VaultSnapshot(
   val autoIndexEnabled: Boolean = false,
   val autoIndexScope: String = "everything", // "everything" | "all_photos" | "screenshots"
   val autoIndexLocalOnly: Boolean = false,
+  val accountName: String? = null,
+  val accountUsername: String? = null,
+)
+
+data class AuthAccountInfo(
+  val uid: String,
+  val email: String?,
+  val name: String?,
+  val username: String?,
 )
 
 data class SearchCitation(

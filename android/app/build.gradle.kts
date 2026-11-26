@@ -12,8 +12,8 @@ android {
     applicationId = "com.memora.app"
     minSdk = 26
     targetSdk = 36
-    versionCode = 5
-    versionName = "1.2.2"
+    versionCode = 6
+    versionName = "1.2.3"
   }
 
   buildTypes {
@@ -74,6 +74,9 @@ dependencies {
   implementation(libs.firebase.config)
   implementation(libs.firebase.appcheck.debug)
   implementation(libs.firebase.appcheck.playintegrity)
+  implementation(libs.androidx.credentials)
+  implementation(libs.androidx.credentials.play.services.auth)
+  implementation(libs.googleid)
 
   // Tooling & Tests
   debugImplementation(libs.androidx.compose.ui.tooling)

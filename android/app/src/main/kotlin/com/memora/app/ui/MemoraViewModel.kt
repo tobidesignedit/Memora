@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.ListenerRegistration
 import com.memora.app.BuildConfig
 import com.memora.app.data.AppUpdater
+import com.memora.app.data.AuthAccountInfo
 import com.memora.app.data.BenchmarkEntry
 import com.memora.app.data.FileLibraryIndexer
 import com.memora.app.data.MediaAutoIndexer
@@ -51,6 +52,8 @@ data class MemoraUiState(
   val online: Boolean = true,
   val uid: String? = null,
   val accountEmail: String? = null,
+  val accountName: String? = null,
+  val accountUsername: String? = null,
   val dismissedAuthLanding: Boolean = false,
   val authBusy: Boolean = false,
   val updateCheckBusy: Boolean = false,
@@ -134,6 +137,8 @@ class MemoraViewModel(application: Application) : AndroidViewModel(application) 
           autoIndexLocalOnly = local.autoIndexLocalOnly,
           indexedMediaCount = indexedMediaKeys.size,
           connectedFolderCount = fileLibrary.connectedFolders().size,
+          accountName = local.accountName,
+          accountUsername = local.accountUsername,
         )
       }
 
@@ -143,12 +148,14 @@ class MemoraViewModel(application: Application) : AndroidViewModel(application) 
 
       val rc = repo.fetchRemoteConfig(forceFresh = false)
       val uid = repo.ensureSignedInUid()
-      val email = repo.currentAccountEmail()
+      val acct = repo.currentAccountInfo()
       val hasUpdate = rc.latestAppVersionCode > BuildConfig.VERSION_CODE && rc.apkDownloadUrl.isNotBlank()
       _ui.update {
         it.copy(
           uid = uid,
-          accountEmail = email,
+          accountEmail = acct?.email,
+          accountName = acct?.name ?: local.accountName,
+          accountUsername = acct?.username ?: local.accountUsername,
           remoteConfig = rc,
           updateAvailable = hasUpdate,
           defaultPrivacyMode = rc.defaultInferenceMode,
@@ -233,6 +240,8 @@ class MemoraViewModel(application: Application) : AndroidViewModel(application) 
         autoIndexEnabled = state.autoIndexEnabled,
         autoIndexScope = state.autoIndexScope,
         autoIndexLocalOnly = state.autoIndexLocalOnly,
+        accountName = state.accountName,
+        accountUsername = state.accountUsername,
       ),
     )
   }
@@ -322,8 +331,8 @@ class MemoraViewModel(application: Application) : AndroidViewModel(application) 
       _ui.update { it.copy(authBusy = true) }
       try {
         repo.signInWithEmail(email, password)
-          .onSuccess { (uid, mail) ->
-            onAuthenticatedAccount(uid, mail, "Signed in as ${mail ?: "account"} — syncing live.")
+          .onSuccess { info ->
+            onAuthenticatedAccount(info, "Signed in as ${info.name ?: info.email ?: "account"} — syncing live.")
           }
           .onFailure { err ->
             _ui.update { it.copy(toastMessage = err.localizedMessage ?: "Sign-in failed.") }
@@ -334,18 +343,20 @@ class MemoraViewModel(application: Application) : AndroidViewModel(application) 
     }
   }
 
-  fun signUpWithEmail(email: String, password: String) {
+  fun signUpWithEmail(name: String, username: String, email: String, password: String) {
     if (_ui.value.authBusy) return
-    if (email.isBlank() || password.length < 6) {
-      _ui.update { it.copy(toastMessage = "Enter a valid email and 6+ character password.") }
+    val cleanName = name.trim()
+    val cleanUsername = username.trim().removePrefix("@").trim()
+    if (cleanName.isEmpty() || cleanUsername.isEmpty() || email.isBlank() || password.length < 6) {
+      _ui.update { it.copy(toastMessage = "Enter your name, username, valid email, and 6+ character password.") }
       return
     }
     viewModelScope.launch {
       _ui.update { it.copy(authBusy = true) }
       try {
-        repo.signUpWithEmail(email, password)
-          .onSuccess { (uid, mail) ->
-            onAuthenticatedAccount(uid, mail, "Account created (${mail ?: "synced"}) — vault linked!")
+        repo.signUpWithEmail(cleanName, cleanUsername, email, password)
+          .onSuccess { info ->
+            onAuthenticatedAccount(info, "Welcome, ${info.name ?: info.email ?: "friend"}! Vault linked.")
           }
           .onFailure { err ->
             _ui.update { it.copy(toastMessage = err.localizedMessage ?: "Sign-up failed.") }
@@ -362,8 +373,8 @@ class MemoraViewModel(application: Application) : AndroidViewModel(application) 
       _ui.update { it.copy(authBusy = true) }
       try {
         repo.signInWithGoogle(activity)
-          .onSuccess { (uid, mail) ->
-            onAuthenticatedAccount(uid, mail, "Signed in with Google (${mail ?: "synced"}). ")
+          .onSuccess { info ->
+            onAuthenticatedAccount(info, "Signed in with Google (${info.name ?: info.email ?: "synced"}).")
           }
           .onFailure { err ->
             _ui.update { it.copy(toastMessage = err.localizedMessage ?: "Google sign-in failed.") }
@@ -374,21 +385,24 @@ class MemoraViewModel(application: Application) : AndroidViewModel(application) 
     }
   }
 
-  private suspend fun onAuthenticatedAccount(uid: String, email: String?, message: String) {
+  private suspend fun onAuthenticatedAccount(info: AuthAccountInfo, message: String) {
     // Re-stamp any non-private local items so existing captures sync into the linked account
     val restamped = _ui.value.memories.map { m ->
-      if (m.privacyMode == "only_on_device") m else m.copy(uid = uid, syncStatus = "pending")
+      if (m.privacyMode == "only_on_device") m else m.copy(uid = info.uid, syncStatus = "pending")
     }
     _ui.update {
       it.copy(
-        uid = uid,
-        accountEmail = email,
+        uid = info.uid,
+        accountEmail = info.email,
+        accountName = info.name ?: it.accountName,
+        accountUsername = info.username ?: it.accountUsername,
+        dismissedAuthLanding = true,
         memories = restamped,
         toastMessage = message,
       )
     }
-    attachCloudListeners(uid)
-    flushPendingMemories(uid)
+    attachCloudListeners(info.uid)
+    flushPendingMemories(info.uid)
     persistCurrent()
   }
 
@@ -401,9 +415,12 @@ class MemoraViewModel(application: Application) : AndroidViewModel(application) 
         it.copy(
           uid = guestUid,
           accountEmail = null,
+          accountName = null,
+          accountUsername = null,
           toastMessage = "Signed out to local guest session.",
         )
       }
+      persistCurrent()
       if (guestUid != null) attachCloudListeners(guestUid)
     }
   }

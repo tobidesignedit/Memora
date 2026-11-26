@@ -171,10 +171,18 @@ fun VaultScreen(
 ) {
   val palette = LocalMemoraColors.current
   val hourNow = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
-  val greeting = when {
-    hourNow < 12 -> "Good morning."
-    hourNow < 18 -> "Good afternoon."
-    else -> "Good evening."
+  val greetingPrefix = when {
+    hourNow < 12 -> "Good morning"
+    hourNow < 18 -> "Good afternoon"
+    else -> "Good evening"
+  }
+  val greetingName = state.accountName?.trim()?.takeIf { it.isNotEmpty() }
+    ?: state.accountUsername?.trim()?.takeIf { it.isNotEmpty() }
+    ?: state.accountEmail?.substringBefore('@')?.trim()?.takeIf { it.isNotEmpty() }
+  val greetingText = if (greetingName != null) {
+    "$greetingPrefix, $greetingName!"
+  } else {
+    "$greetingPrefix!"
   }
 
   val visibleMemories = remember(state.memories, state.activeFilter, state.quickQuery) {
@@ -212,9 +220,10 @@ fun VaultScreen(
   ) {
     item {
       Text(
-        text = "$greeting Everything worth keeping.",
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        text = greetingText,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onBackground,
       )
     }
 

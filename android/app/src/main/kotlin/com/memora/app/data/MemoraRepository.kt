@@ -5,9 +5,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.OAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
@@ -40,7 +47,33 @@ class MemoraRepository(private val context: Context) {
     return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
   }
 
+  private fun parseDisplayName(rawDisplayName: String?, fallbackEmail: String?): Pair<String?, String?> {
+    val raw = rawDisplayName?.trim().orEmpty()
+    if (raw.isNotEmpty()) {
+      val match = Regex("^(.*?)\\s*\\(@([^)]+)\\)$").find(raw)
+      if (match != null) {
+        val parsedName = match.groupValues[1].trim().ifBlank { null }
+        val parsedUser = match.groupValues[2].trim().ifBlank { null }
+        return parsedName to parsedUser
+      }
+      val fallbackUser = fallbackEmail?.substringBefore('@')?.trim()?.takeIf { it.isNotBlank() }
+      return raw to fallbackUser
+    }
+    return null to null
+  }
+
   fun currentAccountEmail(): String? = auth.currentUser?.takeIf { !it.isAnonymous }?.email
+
+  fun currentAccountInfo(): AuthAccountInfo? {
+    val u = auth.currentUser?.takeIf { !it.isAnonymous } ?: return null
+    val (name, username) = parseDisplayName(u.displayName, u.email)
+    return AuthAccountInfo(
+      uid = u.uid,
+      email = u.email,
+      name = name,
+      username = username,
+    )
+  }
 
   suspend fun ensureSignedInUid(): String? {
     auth.currentUser?.uid?.let { return it }
@@ -50,15 +83,30 @@ class MemoraRepository(private val context: Context) {
     }.getOrNull()
   }
 
-  suspend fun signInWithEmail(email: String, password: String): Result<Pair<String, String?>> =
+  suspend fun signInWithEmail(email: String, password: String): Result<AuthAccountInfo> =
     runCatching {
       val res = auth.signInWithEmailAndPassword(email.trim(), password).await()
       val u = res.user ?: error("Sign-in did not return a user.")
-      u.uid to u.email
+      runCatching { u.reload().await() }
+      val refreshed = auth.currentUser ?: u
+      val (name, username) = parseDisplayName(refreshed.displayName, refreshed.email)
+      AuthAccountInfo(
+        uid = refreshed.uid,
+        email = refreshed.email,
+        name = name,
+        username = username,
+      )
     }
 
-  suspend fun signUpWithEmail(email: String, password: String): Result<Pair<String, String?>> =
+  suspend fun signUpWithEmail(
+    name: String,
+    username: String,
+    email: String,
+    password: String,
+  ): Result<AuthAccountInfo> =
     runCatching {
+      val cleanName = name.trim()
+      val cleanUsername = username.trim().removePrefix("@").trim()
       val cleanEmail = email.trim()
       val current = auth.currentUser
       val user = if (current != null && current.isAnonymous) {
@@ -68,15 +116,77 @@ class MemoraRepository(private val context: Context) {
       } else {
         auth.createUserWithEmailAndPassword(cleanEmail, password).await().user
       } ?: error("Account creation failed.")
-      user.uid to user.email
+
+      val formattedDisplay = when {
+        cleanName.isNotEmpty() && cleanUsername.isNotEmpty() -> "$cleanName (@$cleanUsername)"
+        cleanName.isNotEmpty() -> cleanName
+        cleanUsername.isNotEmpty() -> "@$cleanUsername"
+        else -> ""
+      }
+      if (formattedDisplay.isNotEmpty()) {
+        runCatching {
+          user.updateProfile(
+            UserProfileChangeRequest.Builder().setDisplayName(formattedDisplay).build(),
+          ).await()
+        }
+      }
+
+      AuthAccountInfo(
+        uid = user.uid,
+        email = user.email ?: cleanEmail,
+        name = cleanName.ifBlank { null },
+        username = cleanUsername.ifBlank { null },
+      )
     }
 
-  suspend fun signInWithGoogle(activity: Activity): Result<Pair<String, String?>> =
+  suspend fun signInWithGoogle(activity: Activity): Result<AuthAccountInfo> =
     runCatching {
-      val provider = OAuthProvider.newBuilder("google.com").build()
-      val res = auth.startActivityForSignInWithProvider(activity, provider).await()
-      val u = res.user ?: error("Google sign-in did not return a user.")
-      u.uid to u.email
+      val webClientId = runCatching {
+        context.getString(com.memora.app.R.string.default_web_client_id)
+      }.getOrNull()?.takeIf { it.isNotBlank() }
+        ?: "67062354466-94nj28uj11qeubv10t0g5j4v70i3s64u.apps.googleusercontent.com"
+
+      var googleDisplayName: String? = null
+      val credUser = try {
+        val credentialManager = CredentialManager.create(activity)
+        val googleIdOption = GetGoogleIdOption.Builder()
+          .setFilterByAuthorizedAccounts(false)
+          .setServerClientId(webClientId)
+          .setAutoSelectEnabled(false)
+          .build()
+        val request = GetCredentialRequest.Builder()
+          .addCredentialOption(googleIdOption)
+          .build()
+        val credResult = credentialManager.getCredential(request = request, context = activity)
+        val googleIdTokenCred = GoogleIdTokenCredential.createFrom(credResult.credential.data)
+        googleDisplayName = googleIdTokenCred.displayName
+        val firebaseCred = GoogleAuthProvider.getCredential(googleIdTokenCred.idToken, null)
+        val current = auth.currentUser
+        if (current != null && current.isAnonymous) {
+          runCatching { current.linkWithCredential(firebaseCred).await().user }
+            .getOrNull() ?: auth.signInWithCredential(firebaseCred).await().user
+        } else {
+          auth.signInWithCredential(firebaseCred).await().user
+        }
+      } catch (cancel: GetCredentialCancellationException) {
+        throw IllegalStateException("Google sign-in cancelled.", cancel)
+      } catch (_: Exception) {
+        // Fallback to Firebase OAuthProvider web flow when Credential Manager has no local Google account
+        val provider = OAuthProvider.newBuilder("google.com").build()
+        auth.startActivityForSignInWithProvider(activity, provider).await().user
+      }
+
+      val u = credUser ?: error("Google sign-in did not return a user.")
+      val (parsedName, parsedUsername) = parseDisplayName(
+        u.displayName?.takeIf { it.isNotBlank() } ?: googleDisplayName,
+        u.email,
+      )
+      AuthAccountInfo(
+        uid = u.uid,
+        email = u.email,
+        name = parsedName,
+        username = parsedUsername,
+      )
     }
 
   suspend fun signOutToGuest(): String? {

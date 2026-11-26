@@ -273,7 +273,7 @@ fun HybridTelemetrySheet(
   onScanMediaNow: () -> Unit,
   onRunSideBySideBenchmark: () -> Unit = {},
   onSignInEmail: (String, String) -> Unit = { _, _ -> },
-  onSignUpEmail: (String, String) -> Unit = { _, _ -> },
+  onSignUpEmail: (String, String, String, String) -> Unit = { _, _, _, _ -> },
   onGoogleSignIn: () -> Unit = {},
   onSignOut: () -> Unit = {},
   onCheckForUpdate: () -> Unit = {},
@@ -285,6 +285,8 @@ fun HybridTelemetrySheet(
   val palette = LocalMemoraColors.current
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
   var isSignUpMode by remember { mutableStateOf(false) }
+  var nameDraft by remember { mutableStateOf("") }
+  var usernameDraft by remember { mutableStateOf("") }
   var emailDraft by remember { mutableStateOf("") }
   var passwordDraft by remember { mutableStateOf("") }
   val onDeviceRuns = state.benchmarks.filter { it.source == "on_device" }
@@ -337,6 +339,17 @@ fun HybridTelemetrySheet(
           }
 
           if (state.accountEmail != null) {
+            val identityLine = listOfNotNull(
+              state.accountName?.takeIf { it.isNotBlank() },
+              state.accountUsername?.takeIf { it.isNotBlank() }?.let { "@$it" },
+            ).joinToString(" · ")
+            if (identityLine.isNotEmpty()) {
+              Text(
+                text = identityLine,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+              )
+            }
             Text(
               text = "Signed in as ${state.accountEmail}. Sign in with this same email on MEMORA Web to sync automatically.",
               style = MaterialTheme.typography.bodySmall,
@@ -383,6 +396,24 @@ fun HybridTelemetrySheet(
                 }
               }
             }
+            if (isSignUpMode) {
+              OutlinedTextField(
+                value = nameDraft,
+                onValueChange = { nameDraft = it },
+                label = { Text("Name") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+              )
+              OutlinedTextField(
+                value = usernameDraft,
+                onValueChange = { usernameDraft = it },
+                label = { Text("Username") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+              )
+            }
             OutlinedTextField(
               value = emailDraft,
               onValueChange = { emailDraft = it },
@@ -402,7 +433,7 @@ fun HybridTelemetrySheet(
             )
             Button(
               onClick = {
-                if (isSignUpMode) onSignUpEmail(emailDraft, passwordDraft)
+                if (isSignUpMode) onSignUpEmail(nameDraft, usernameDraft, emailDraft, passwordDraft)
                 else onSignInEmail(emailDraft, passwordDraft)
               },
               enabled = !state.authBusy,
