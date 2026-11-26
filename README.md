@@ -4,8 +4,16 @@
 > Built for **#BuildHybridAI 2026** — running across **Android (Kotlin + Jetpack Compose)**, **Chrome Web (React + TypeScript on Firebase Hosting)**, and a **Manifest V3 Chrome Extension**, all powered by **Firebase AI Logic Hybrid Inference**.
 
 - **Live Web App:** https://memora-hybrid-ai-2026.web.app
+- **Android APK (`v1.2.3` Direct Download):** https://github.com/tobidesignedit/Memora/releases/latest/download/MEMORA-Android.apk
+- **Demo Video (2:45):** _[Add your YouTube / Vimeo link here once uploaded]_
 - **License:** [Apache 2.0](./LICENSE)
 - **Core Cycle:** `CAPTURE → UNDERSTAND → CONNECT → REMEMBER → ACT`
+
+### Quick Judge Test (Zero Setup)
+1. **Chrome Web:** Open [memora-hybrid-ai-2026.web.app](https://memora-hybrid-ai-2026.web.app) and click **Continue as Guest** (1-click Firebase Anonymous Auth) or sign in with Google.
+2. **Capture & Privacy Routing:** Drop any screenshot, flyer, receipt, or PDF — toggle between **Smart Hybrid (`PREFER_ON_DEVICE`)** and **Local Vault (`ONLY_ON_DEVICE`)** to see real-time extraction, Visual Intelligence Reminders, and latency telemetry.
+3. **Ask & Spoken Recap:** Tap **Ask** to query your vault in natural language with clickable source citations and audio recaps.
+4. **Android Native (`v1.2.3`):** Download [MEMORA-Android.apk](https://github.com/tobidesignedit/Memora/releases/latest/download/MEMORA-Android.apk) to test Jetpack Compose UI, Android Share Sheet capture, local offline notifications, and real-time Phone ↔ PC Firestore sync.
 
 ---
 
