@@ -18,16 +18,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountTree
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Layers
-import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
@@ -141,6 +138,8 @@ private fun DockGlassTab(
         text = label,
         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
         color = fg,
+        maxLines = 1,
+        softWrap = false,
       )
     }
   }
@@ -286,33 +285,8 @@ fun MemoraRootScreen(
           actions = {
             GlassPill(
               elevated = true,
-              onClick = { viewModel.openTelemetry(true) },
-              modifier = Modifier
-                .padding(end = 6.dp)
-                .size(36.dp),
-            ) {
-              Box(modifier = Modifier.align(Alignment.Center)) {
-                Icon(
-                  imageVector = Icons.Outlined.Settings,
-                  contentDescription = "Settings",
-                  tint = MaterialTheme.colorScheme.onSurface,
-                  modifier = Modifier.size(18.dp),
-                )
-                if (state.updateAvailable) {
-                  Box(
-                    modifier = Modifier
-                      .align(Alignment.TopEnd)
-                      .size(7.dp)
-                      .clip(CircleShape)
-                      .background(MaterialTheme.colorScheme.primary),
-                  )
-                }
-              }
-            }
-            GlassPill(
-              elevated = true,
               onClick = { viewModel.selectTab(MemoraTab.SEARCH) },
-              modifier = Modifier.padding(end = 6.dp),
+              modifier = Modifier.padding(end = 12.dp),
             ) {
               Row(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
@@ -329,23 +303,6 @@ fun MemoraRootScreen(
                   color = MaterialTheme.colorScheme.onSurface,
                 )
               }
-            }
-
-            GlassPill(
-              elevated = true,
-              onClick = { viewModel.toggleTheme() },
-              modifier = Modifier
-                .padding(end = 10.dp)
-                .size(36.dp),
-            ) {
-              Icon(
-                imageVector = if (state.darkMode) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
-                contentDescription = "Toggle light and dark theme",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                  .size(18.dp)
-                  .align(Alignment.Center),
-              )
             }
           },
         )
@@ -449,26 +406,25 @@ fun MemoraRootScreen(
           )
         }
 
-        // Crisp Solid Floating Pill Bottom Dock (Zero Bleed-Through)
+        // Crisp Solid Floating Pill Bottom Dock (Shifted lower for natural thumb reach)
         GlassPill(
           elevated = true,
           tintTop = if (palette.isDark) GalleryDarkSurface else Color.White,
           tintBottom = if (palette.isDark) GalleryDarkSurface else Color.White,
           modifier = Modifier
             .align(Alignment.BottomCenter)
-            .navigationBarsPadding()
-            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)
+            .padding(start = 12.dp, end = 12.dp, bottom = 2.dp)
             .fillMaxWidth(),
         ) {
           Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
           ) {
             DockGlassTab(
               label = "Vault",
               icon = Icons.Outlined.Layers,
-              selected = state.activeTab == MemoraTab.VAULT,
+              selected = state.activeTab == MemoraTab.VAULT && !state.telemetrySheetOpen,
               badgeCount = 0,
               onClick = { viewModel.selectTab(MemoraTab.VAULT) },
               modifier = Modifier.weight(1f),
@@ -476,7 +432,7 @@ fun MemoraRootScreen(
             DockGlassTab(
               label = "Ask",
               icon = Icons.Outlined.Search,
-              selected = state.activeTab == MemoraTab.SEARCH,
+              selected = state.activeTab == MemoraTab.SEARCH && !state.telemetrySheetOpen,
               badgeCount = 0,
               onClick = { viewModel.selectTab(MemoraTab.SEARCH) },
               modifier = Modifier.weight(1f),
@@ -484,7 +440,7 @@ fun MemoraRootScreen(
             DockGlassTab(
               label = "Threads",
               icon = Icons.Outlined.AccountTree,
-              selected = state.activeTab == MemoraTab.THREADS,
+              selected = state.activeTab == MemoraTab.THREADS && !state.telemetrySheetOpen,
               badgeCount = 0,
               onClick = { viewModel.selectTab(MemoraTab.THREADS) },
               modifier = Modifier.weight(1f),
@@ -492,15 +448,23 @@ fun MemoraRootScreen(
             DockGlassTab(
               label = "Remind",
               icon = Icons.Outlined.Notifications,
-              selected = state.activeTab == MemoraTab.REMINDERS,
+              selected = state.activeTab == MemoraTab.REMINDERS && !state.telemetrySheetOpen,
               badgeCount = pendingReminders,
               onClick = { viewModel.selectTab(MemoraTab.REMINDERS) },
+              modifier = Modifier.weight(1f),
+            )
+            DockGlassTab(
+              label = "Settings",
+              icon = Icons.Outlined.Settings,
+              selected = state.telemetrySheetOpen,
+              badgeCount = if (state.updateAvailable) 1 else 0,
+              onClick = { viewModel.openTelemetry(true) },
               modifier = Modifier.weight(1f),
             )
             // Primary Indigo Capture Button (Genesis Indigo CTA)
             Box(
               modifier = Modifier
-                .size(46.dp)
+                .size(44.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary)
                 .clickable { viewModel.openCapture(true) },
@@ -510,7 +474,7 @@ fun MemoraRootScreen(
                 Icons.Outlined.Add,
                 contentDescription = "Capture memory",
                 tint = Color.White,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(21.dp),
               )
             }
           }
@@ -575,6 +539,7 @@ fun MemoraRootScreen(
       onSignOut = viewModel::signOutAccount,
       onCheckForUpdate = viewModel::checkForAppUpdate,
       onDownloadUpdate = viewModel::downloadAndInstallUpdate,
+      onToggleTheme = viewModel::toggleTheme,
       onSyncNow = viewModel::syncNow,
       onLoadDemo = {
         viewModel.loadDemoMemories()

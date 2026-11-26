@@ -37,8 +37,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -213,6 +216,8 @@ fun AuthLandingScreen(
               .fillMaxWidth()
               .height(48.dp),
           ) {
+            GoogleGLogo(modifier = Modifier.size(18.dp))
+            Spacer(Modifier.size(10.dp))
             Text(
               text = "Continue with Google",
               style = MaterialTheme.typography.labelLarge,
@@ -230,5 +235,65 @@ fun AuthLandingScreen(
         )
       }
     }
+  }
+}
+
+@Composable
+fun GoogleGLogo(modifier: Modifier = Modifier) {
+  Canvas(modifier = modifier) {
+    val w = size.width
+    val h = size.height
+    val strokeWidth = w * 0.20f
+    val inset = strokeWidth / 2f
+    val arcSize = Size(w - strokeWidth, h - strokeWidth)
+    val topLeft = Offset(inset, inset)
+
+    // Blue right & bottom-right arc + horizontal bar
+    drawArc(
+      color = Color(0xFF4285F4),
+      startAngle = -15f,
+      sweepAngle = 60f,
+      useCenter = false,
+      topLeft = topLeft,
+      size = arcSize,
+      style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+    )
+    drawLine(
+      color = Color(0xFF4285F4),
+      start = Offset(w * 0.50f, h * 0.50f),
+      end = Offset(w - inset * 0.4f, h * 0.50f),
+      strokeWidth = strokeWidth * 0.92f,
+      cap = StrokeCap.Butt,
+    )
+    // Green bottom arc
+    drawArc(
+      color = Color(0xFF34A853),
+      startAngle = 42f,
+      sweepAngle = 98f,
+      useCenter = false,
+      topLeft = topLeft,
+      size = arcSize,
+      style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+    )
+    // Yellow left arc
+    drawArc(
+      color = Color(0xFFFBBC05),
+      startAngle = 138f,
+      sweepAngle = 82f,
+      useCenter = false,
+      topLeft = topLeft,
+      size = arcSize,
+      style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+    )
+    // Red top arc
+    drawArc(
+      color = Color(0xFFEA4335),
+      startAngle = 218f,
+      sweepAngle = 104f,
+      useCenter = false,
+      topLeft = topLeft,
+      size = arcSize,
+      style = Stroke(width = strokeWidth, cap = StrokeCap.Butt),
+    )
   }
 }

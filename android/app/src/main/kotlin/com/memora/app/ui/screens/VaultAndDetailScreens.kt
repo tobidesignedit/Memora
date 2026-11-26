@@ -276,7 +276,7 @@ fun VaultScreen(
             IconButton(
               onClick = onOpenCapture,
               modifier = Modifier
-                .size(34.dp)
+                .size(28.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary),
             ) {
@@ -284,7 +284,7 @@ fun VaultScreen(
                 imageVector = Icons.Outlined.GraphicEq,
                 contentDescription = "Record voice thought",
                 tint = Color.White,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(15.dp),
               )
             }
           }

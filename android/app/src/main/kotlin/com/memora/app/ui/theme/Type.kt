@@ -6,9 +6,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val DisplaySerif = FontFamily.Serif
-val UiSans = FontFamily.SansSerif
-val DataMono = FontFamily.Monospace
+val MemoraFont = FontFamily.SansSerif
+val DisplaySerif = MemoraFont
+val UiSans = MemoraFont
+val DataMono = MemoraFont
 
 val MemoraTypography = Typography(
   displaySmall = TextStyle(

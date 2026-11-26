@@ -24,6 +24,11 @@ android/.cxx/
 *.aab
 *.keystore
 *.jks
+*.mp4
+*.webm
+*.wav
+video-studio/node_modules/
+video-studio/out/
 
 # Firebase & Secrets
 .firebase/

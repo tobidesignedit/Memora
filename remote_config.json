@@ -45,14 +45,14 @@
     },
     "latest_app_version_code": {
       "defaultValue": {
-        "value": "4"
+        "value": "5"
       },
       "description": "Latest Android APK versionCode pushed for automatic OTA update notification.",
       "valueType": "NUMBER"
     },
     "latest_app_version_name": {
       "defaultValue": {
-        "value": "1.2.1"
+        "value": "1.2.2"
       },
       "description": "Human-readable version name of the latest pushed Android APK.",
       "valueType": "STRING"
@@ -66,9 +66,9 @@
     },
     "apk_release_notes": {
       "defaultValue": {
-        "value": "MEMORA v1.2.1 — Dedicated Settings gear button in the top bar."
+        "value": ""
       },
-      "description": "Short release notes displayed when an Android update is available.",
+      "description": "Optional release notes (kept empty by default).",
       "valueType": "STRING"
     }
   }

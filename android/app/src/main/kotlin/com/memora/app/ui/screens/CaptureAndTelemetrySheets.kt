@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Mic
@@ -276,6 +278,7 @@ fun HybridTelemetrySheet(
   onSignOut: () -> Unit = {},
   onCheckForUpdate: () -> Unit = {},
   onDownloadUpdate: () -> Unit = {},
+  onToggleTheme: () -> Unit = {},
   onSyncNow: () -> Unit,
   onLoadDemo: () -> Unit,
 ) {
@@ -418,9 +421,52 @@ fun HybridTelemetrySheet(
               shape = RoundedCornerShape(12.dp),
               modifier = Modifier.fillMaxWidth(),
             ) {
+              GoogleGLogo(modifier = Modifier.size(16.dp))
+              Spacer(Modifier.size(8.dp))
               Text("Continue with Google")
             }
           }
+        }
+      }
+
+      // 1b. Appearance (Light / Dark Mode inside Settings)
+      Surface(
+        color = palette.surfaceSoft,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, palette.borderSubtle),
+        modifier = Modifier.fillMaxWidth(),
+      ) {
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggleTheme() }
+            .padding(14.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+          ) {
+            Icon(
+              imageVector = if (state.darkMode) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
+              contentDescription = null,
+              tint = MaterialTheme.colorScheme.primary,
+              modifier = Modifier.size(18.dp),
+            )
+            Column {
+              Text("Appearance", style = MaterialTheme.typography.titleSmall)
+              Text(
+                text = if (state.darkMode) "Dark mode enabled" else "Light mode enabled",
+                style = MaterialTheme.typography.bodySmall,
+                color = palette.mutedText,
+              )
+            }
+          }
+          Switch(
+            checked = state.darkMode,
+            onCheckedChange = { onToggleTheme() },
+          )
         }
       }
 
@@ -448,13 +494,15 @@ fun HybridTelemetrySheet(
               color = palette.mutedText,
             )
           }
-          if (state.remoteConfig.apkReleaseNotes.isNotBlank()) {
-            Text(
-              text = state.remoteConfig.apkReleaseNotes,
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-          }
+          Text(
+            text = if (state.updateAvailable) {
+              "A newer version (v${state.remoteConfig.latestAppVersionName}) is available."
+            } else {
+              "Up to date — you are running the latest version."
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = if (state.updateAvailable) MaterialTheme.colorScheme.primary else palette.onDevice,
+          )
           if (state.updateDownloading) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
               Row(
@@ -479,7 +527,7 @@ fun HybridTelemetrySheet(
             ) {
               Text(if (state.updateCheckBusy) "Checking..." else "Check for Update")
             }
-            if (state.remoteConfig.apkDownloadUrl.isNotBlank()) {
+            if (state.updateAvailable && state.remoteConfig.apkDownloadUrl.isNotBlank()) {
               Button(
                 onClick = onDownloadUpdate,
                 enabled = !state.updateDownloading,
